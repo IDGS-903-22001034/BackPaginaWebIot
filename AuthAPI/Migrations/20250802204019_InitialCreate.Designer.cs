@@ -4,6 +4,7 @@ using AuthAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AuthAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250802204019_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -138,11 +141,14 @@ namespace AuthAPI.Migrations
                     b.Property<int>("CantidadRequerida")
                         .HasColumnType("int");
 
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
                     b.HasKey("ProductoId", "PiezaId");
 
                     b.HasIndex("PiezaId");
 
-                    b.ToTable("ComponentesProducto", (string)null);
+                    b.ToTable("ComponentesProducto");
                 });
 
             modelBuilder.Entity("AuthAPI.Models.Compra", b =>
@@ -435,12 +441,7 @@ namespace AuthAPI.Migrations
                     b.Property<decimal>("Total")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("UsuarioId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("UsuarioId");
 
                     b.ToTable("Ventas");
                 });
@@ -679,16 +680,6 @@ namespace AuthAPI.Migrations
                     b.Navigation("Pieza");
                 });
 
-            modelBuilder.Entity("AuthAPI.Models.Venta", b =>
-                {
-                    b.HasOne("AuthAPI.Models.AppUser", "Usuario")
-                        .WithMany()
-                        .HasForeignKey("UsuarioId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Usuario");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -747,7 +738,8 @@ namespace AuthAPI.Migrations
 
             modelBuilder.Entity("AuthAPI.Models.MovimientosPieza", b =>
                 {
-                    b.Navigation("DetalleCompra");
+                    b.Navigation("DetalleCompra")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("AuthAPI.Models.Pieza", b =>
