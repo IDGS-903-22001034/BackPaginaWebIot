@@ -1,46 +1,74 @@
-using System.Text;
 using AuthAPI.Data;
 using AuthAPI.Models;
+using AuthAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers();
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("cadenaSQL")));
+
+builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
+{
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 6;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireLowercase = true;
+})
+.AddEntityFrameworkStores<AppDbContext>()
+.AddDefaultTokenProviders();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngular",
+        builder =>
+        {
+            builder.WithOrigins("http://localhost:4200")
+                   .AllowAnyHeader()
+                   .AllowAnyMethod()
+                   .AllowCredentials();
+        });
+});
 
 // Add services to the container.
 
 //Obtenemos la configuración del JWTSettings
-var JWTSettings = builder.Configuration.GetSection("JWTSetting");
+var jwtSettings = builder.Configuration.GetSection("JWTSetting");
+var key = Encoding.ASCII.GetBytes(jwtSettings["securityKey"]!);
 
 //Configuración para SQLServer
 var connectionSrtring =
     builder.Configuration.GetConnectionString("cadenaSQL");
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionSrtring));
 
-//Agregamos la configuración para ASP -Net Core Identity
-builder.Services.AddIdentity<AppUser, IdentityRole>().AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
-
-builder.Services.AddAuthentication(opt =>
+builder.Services.AddAuthentication(options =>
 {
-    opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    opt.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(opt =>
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
 {
-    opt.SaveToken = true;
-    opt.RequireHttpsMetadata = false;
-    opt.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    options.SaveToken = true;
+    options.RequireHttpsMetadata = false; // Solo para desarrollo
+    options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ClockSkew=TimeSpan.Zero,
         ValidateIssuerSigningKey = true,
-        ValidAudience = JWTSettings["ValidAudience"],
-        ValidIssuer = JWTSettings["ValidIssuer"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JWTSettings.GetSection("securityKey").Value!))
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ValidateIssuer = true,
+        ValidIssuer = jwtSettings["ValidIssuer"],
+        ValidateAudience = true,
+        ValidAudience = jwtSettings["ValidAudience"],
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero
     };
 });
 
@@ -50,39 +78,80 @@ builder.Services.AddControllers();
 
 //Añadiend Swagger
 builder.Services.AddEndpointsApiExplorer();
-//Se reempleza la linea de Swagger
-//Agregando la Definición de Seguridad
-builder.Services.AddSwaggerGen(c =>
-{
-    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-    {
-        Description = @"JWT Authorization Example : 'Bearer eyeleieieekeieieie",
-        Name = "Authorization",
-        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
-    });
 
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement()
-   {
-       {
-           new OpenApiSecurityScheme
-           {
-               Reference = new OpenApiReference
-               {
-                   Type = ReferenceType.SecurityScheme,
-                   Id = "Bearer"
-               },
-               Scheme = "outh2",
-               Name = "Bearer",
-               In = ParameterLocation.Header,
-           },
-           new List<string>()
-       }
-   });
+// Configure CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngularApp",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:4200", "https://localhost:4200")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        });
 });
 
+// Configure Swagger
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Pecuadex API",
+        Version = "v1",
+        Description = "API para el sistema Pecuadex GPS"
+    });
+
+    // Configurar autenticación JWT en Swagger
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
+
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<ICotizacionService, CotizacionService>();
+
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Pecuadex API v1");
+    });
+}
+
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    await SeedData.Initialize(services);
+}
+
+app.UseCors("AllowAngularApp");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -95,17 +164,55 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseCors(options =>
-{
-    options.AllowAnyHeader();
-    options.AllowAnyMethod();
-    options.AllowAnyOrigin();
-});
-
 app.UseAuthentication();
 
 app.UseAuthorization();
 
 app.MapControllers();
 
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+
+    await SeedRolesAndAdmin(roleManager, userManager);
+}
+
 app.Run();
+
+async Task SeedRolesAndAdmin(RoleManager<IdentityRole> roleManager, UserManager<AppUser> userManager)
+{
+    // Crear roles si no existen
+    string[] roleNames = { "Admin", "User", "Client" };
+
+    foreach (var roleName in roleNames)
+    {
+        if (!await roleManager.RoleExistsAsync(roleName))
+        {
+            await roleManager.CreateAsync(new IdentityRole(roleName));
+        }
+    }
+
+    // Crear usuario admin si no existe
+    var adminEmail = "admin@pecuadex.com";
+    var adminUser = await userManager.FindByEmailAsync(adminEmail);
+
+    if (adminUser == null)
+    {
+        var admin = new AppUser
+        {
+            UserName = adminEmail,
+            Email = adminEmail,
+            FullName = "Administrador",
+            EmailConfirmed = true
+        };
+
+        var result = await userManager.CreateAsync(admin, "Admin123!");
+
+        if (result.Succeeded)
+        {
+            await userManager.AddToRoleAsync(admin, "Admin");
+            Console.WriteLine($"Usuario administrador creado: {adminEmail}");
+        }
+    }
+}

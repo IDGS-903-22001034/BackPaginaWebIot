@@ -23,6 +23,8 @@ namespace AuthAPI.Data
         public DbSet<Manual> Manuales { get; set; }
         public DbSet<Venta> Ventas { get; set; }
         public DbSet<DetalleVenta> DetalleVenta { get; set; }
+        public DbSet<Cotizacion> Cotizaciones { get; set; }
+        public DbSet<EmailTemplate> EmailTemplates { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -134,6 +136,34 @@ namespace AuthAPI.Data
                 entity.HasOne(d => d.Producto)
                     .WithMany(p => p.DetallesVenta)
                     .HasForeignKey(d => d.ProductoId);
+            });
+
+            modelBuilder.Entity<Cotizacion>(entity =>
+            {
+                entity.Property(c => c.Estado)
+                    .HasMaxLength(50)
+                    .HasDefaultValue("Pendiente");
+
+                entity.Property(c => c.PrecioCalculado)
+                    .HasColumnType("decimal(18,2)");
+
+                entity.Property(c => c.PrecioFinal)
+                    .HasColumnType("decimal(18,2)");
+
+                entity.HasOne(c => c.UsuarioAsignado)
+                    .WithMany()
+                    .HasForeignKey(c => c.UsuarioAsignadoId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(c => c.Cliente)
+                    .WithMany()
+                    .HasForeignKey(c => c.ClienteId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(c => c.Venta)
+                    .WithMany()
+                    .HasForeignKey(c => c.VentaId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
         }
 

@@ -4,6 +4,7 @@ using AuthAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AuthAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250807211237_EmailCotizacion")]
+    partial class EmailCotizacion
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -184,9 +187,11 @@ namespace AuthAPI.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("ClienteId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Comentarios")
+                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
@@ -195,6 +200,7 @@ namespace AuthAPI.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Empresa")
+                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
@@ -215,6 +221,7 @@ namespace AuthAPI.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("FuncionalidadesRequeridas")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Hectareas")
@@ -226,6 +233,7 @@ namespace AuthAPI.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("NotasInternas")
+                        .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
@@ -241,10 +249,12 @@ namespace AuthAPI.Migrations
                         .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("TipoGanado")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("UsuarioAsignadoId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int?>("VentaId")
@@ -747,12 +757,14 @@ namespace AuthAPI.Migrations
                     b.HasOne("AuthAPI.Models.AppUser", "Cliente")
                         .WithMany()
                         .HasForeignKey("ClienteId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("AuthAPI.Models.AppUser", "UsuarioAsignado")
                         .WithMany()
                         .HasForeignKey("UsuarioAsignadoId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("AuthAPI.Models.Venta", "Venta")
                         .WithMany()

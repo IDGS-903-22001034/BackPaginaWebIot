@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace AuthAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -100,21 +100,6 @@ namespace AuthAPI.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Proveedores", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Ventas",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Fecha = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETDATE()"),
-                    Total = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Estado = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false, defaultValue: "Completada")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Ventas", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -224,6 +209,28 @@ namespace AuthAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Ventas",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Fecha = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETDATE()"),
+                    Total = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Estado = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false, defaultValue: "Completada"),
+                    UsuarioId = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Ventas", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Ventas_AspNetUsers_UsuarioId",
+                        column: x => x.UsuarioId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "MovimientosPieza",
                 columns: table => new
                 {
@@ -279,7 +286,6 @@ namespace AuthAPI.Migrations
                 {
                     ProductoId = table.Column<int>(type: "int", nullable: false),
                     PiezaId = table.Column<int>(type: "int", nullable: false),
-                    Id = table.Column<int>(type: "int", nullable: false),
                     CantidadRequerida = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -482,6 +488,11 @@ namespace AuthAPI.Migrations
                 name: "IX_MovimientosPieza_PiezaId",
                 table: "MovimientosPieza",
                 column: "PiezaId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Ventas_UsuarioId",
+                table: "Ventas",
+                column: "UsuarioId");
         }
 
         /// <inheritdoc />
@@ -521,9 +532,6 @@ namespace AuthAPI.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "AspNetUsers");
-
-            migrationBuilder.DropTable(
                 name: "Compras");
 
             migrationBuilder.DropTable(
@@ -540,6 +548,9 @@ namespace AuthAPI.Migrations
 
             migrationBuilder.DropTable(
                 name: "Piezas");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUsers");
         }
     }
 }

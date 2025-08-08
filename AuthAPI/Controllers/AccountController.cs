@@ -170,7 +170,8 @@ namespace AuthAPI.Controllers
                 ValidateAudience = false,
                 ValidateIssuer = false,
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("JwtSetting").GetSection("securityKey").Value!)),
+                // CORRECCIÓN: Cambiar "JwtSetting" por "JWTSetting" para que coincida con appsettings.json
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("JWTSetting").GetSection("securityKey").Value!)),
                 ValidateLifetime = false
             };
 
@@ -182,7 +183,6 @@ namespace AuthAPI.Controllers
 
             return principal;
         }
-
 
         [AllowAnonymous]
         [HttpPost("forgot-password")]
@@ -336,10 +336,10 @@ namespace AuthAPI.Controllers
 
             List<Claim> claims = [
                 new (JwtRegisteredClaimNames.Email, user.Email??""),
-       new (JwtRegisteredClaimNames.Name, user.FullName??""),
-       new (JwtRegisteredClaimNames.NameId, user.Id??""),
-       new (JwtRegisteredClaimNames.Aud, _configuration.GetSection("JWTSetting").GetSection("ValidAudience").Value!),
-       new (JwtRegisteredClaimNames.Iss, _configuration.GetSection("JWTSetting").GetSection("ValidIssuer").Value!)
+        new (JwtRegisteredClaimNames.Name, user.FullName??""),
+        new (JwtRegisteredClaimNames.NameId, user.Id??""),
+        new (JwtRegisteredClaimNames.Aud, _configuration.GetSection("JWTSetting").GetSection("ValidAudience").Value!),
+        new (JwtRegisteredClaimNames.Iss, _configuration.GetSection("JWTSetting").GetSection("ValidIssuer").Value!)
             ];
 
             foreach (var role in roles)
@@ -350,7 +350,8 @@ namespace AuthAPI.Controllers
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddMinutes(1),
+                // Cambiar a un tiempo más razonable para desarrollo (30 minutos)
+                Expires = DateTime.UtcNow.AddMinutes(30), // Era 1 minuto, muy corto
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(key),
                     SecurityAlgorithms.HmacSha256

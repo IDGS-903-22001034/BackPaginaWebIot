@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AuthAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250804191707_VentaUsuarioMigracion")]
-    partial class VentaUsuarioMigracion
+    [Migration("20250807212840_Cotizacion")]
+    partial class Cotizacion
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -141,14 +141,11 @@ namespace AuthAPI.Migrations
                     b.Property<int>("CantidadRequerida")
                         .HasColumnType("int");
 
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
-
                     b.HasKey("ProductoId", "PiezaId");
 
                     b.HasIndex("PiezaId");
 
-                    b.ToTable("ComponentesProducto");
+                    b.ToTable("ComponentesProducto", (string)null);
                 });
 
             modelBuilder.Entity("AuthAPI.Models.Compra", b =>
@@ -170,6 +167,107 @@ namespace AuthAPI.Migrations
                     b.HasIndex("ProveedorId");
 
                     b.ToTable("Compras");
+                });
+
+            modelBuilder.Entity("AuthAPI.Models.Cotizacion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CantidadAnimales")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CantidadDispositivos")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("ClienteCreado")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ClienteId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Comentarios")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("EmailCliente")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Empresa")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasDefaultValue("Pendiente");
+
+                    b.Property<DateTime?>("FechaEnvio")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("FechaRespuesta")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaSolicitud")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FuncionalidadesRequeridas")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Hectareas")
+                        .HasColumnType("int");
+
+                    b.Property<string>("NombreCliente")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("NotasInternas")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<decimal?>("PrecioCalculado")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("PrecioFinal")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Telefono")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("TipoGanado")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("UsuarioAsignadoId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int?>("VentaId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClienteId");
+
+                    b.HasIndex("UsuarioAsignadoId");
+
+                    b.HasIndex("VentaId");
+
+                    b.ToTable("Cotizaciones");
                 });
 
             modelBuilder.Entity("AuthAPI.Models.DetalleCompra", b =>
@@ -237,6 +335,34 @@ namespace AuthAPI.Migrations
                     b.HasIndex("VentaId");
 
                     b.ToTable("DetalleVenta");
+                });
+
+            modelBuilder.Entity("AuthAPI.Models.EmailTemplate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Asunto")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Contenido")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EmailTemplates");
                 });
 
             modelBuilder.Entity("AuthAPI.Models.Manual", b =>
@@ -623,6 +749,31 @@ namespace AuthAPI.Migrations
                         .IsRequired();
 
                     b.Navigation("Proveedor");
+                });
+
+            modelBuilder.Entity("AuthAPI.Models.Cotizacion", b =>
+                {
+                    b.HasOne("AuthAPI.Models.AppUser", "Cliente")
+                        .WithMany()
+                        .HasForeignKey("ClienteId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("AuthAPI.Models.AppUser", "UsuarioAsignado")
+                        .WithMany()
+                        .HasForeignKey("UsuarioAsignadoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AuthAPI.Models.Venta", "Venta")
+                        .WithMany()
+                        .HasForeignKey("VentaId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Cliente");
+
+                    b.Navigation("UsuarioAsignado");
+
+                    b.Navigation("Venta");
                 });
 
             modelBuilder.Entity("AuthAPI.Models.DetalleCompra", b =>
