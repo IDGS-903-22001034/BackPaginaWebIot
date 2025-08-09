@@ -36,6 +36,7 @@ namespace AuthAPI.Controllers
                 Total = p.Total,
                 Productos = p.Detalles.Select(d => new ProductoDto
                 {
+                    productoId = d.Producto.Id,
                     Nombre = d.Producto.Nombre,
                     Cantidad = d.Cantidad,
                     PrecioUnitario = d.PrecioUnitario,
