@@ -5,19 +5,19 @@ namespace AuthAPI.Models
 {
     public class Proveedor
     {
-        public int Id { get; set; }
+        public int? Id { get; set; }
 
         [StringLength(100)]
-        public string NombreEmpresa { get; set; }
+        public string? NombreEmpresa { get; set; }
 
         [StringLength(100)]
-        public string Contacto { get; set; }
+        public string? Contacto { get; set; }
 
         [StringLength(20)]
-        public string Telefono { get; set; }
+        public string? Telefono { get; set; }
 
         [StringLength(100)]
-        public string Email { get; set; }
+        public string? Email { get; set; }
 
         [JsonIgnore]
         public ICollection<Compra>? Compras { get; set; }

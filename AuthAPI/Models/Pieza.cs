@@ -5,16 +5,16 @@ namespace AuthAPI.Models
 {
     public class Pieza
     {
-        public int Id { get; set; }
+        public int? Id { get; set; }
 
         [StringLength(100)]
-        public string Nombre { get; set; }
+        public string? Nombre { get; set; }
 
         [StringLength(50)]
-        public string UnidadMedida { get; set; }
+        public string? UnidadMedida { get; set; }
 
         [StringLength(255)]
-        public string Descripcion { get; set; }
+        public string? Descripcion { get; set; }
 
         public DateTime FechaRegistro { get; set; } = DateTime.Now;
 

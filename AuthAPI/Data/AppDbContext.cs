@@ -57,7 +57,7 @@ namespace AuthAPI.Data
                 entity.Property(p => p.FechaRegistro).HasDefaultValueSql("GETDATE()");
             });
 
-            // MovimientosPieza
+            // MovimientosPieza - CONFIGURACIÓN ACTUALIZADA
             modelBuilder.Entity<MovimientosPieza>(entity =>
             {
                 entity.Property(m => m.TipoMovimiento)
@@ -66,7 +66,11 @@ namespace AuthAPI.Data
                     .HasConversion<string>();
 
                 entity.Property(m => m.Cantidad).IsRequired();
-                entity.Property(m => m.CostoPromedio).IsRequired();
+                entity.Property(m => m.CostoPromedio).IsRequired().HasPrecision(18, 2);
+                entity.Property(m => m.CostoUnitario).IsRequired().HasPrecision(18, 2);
+                entity.Property(m => m.SaldoValor).IsRequired().HasPrecision(18, 2);
+                entity.Property(m => m.ValorDebe).IsRequired().HasPrecision(18, 2);
+                entity.Property(m => m.ValorHaber).IsRequired().HasPrecision(18, 2);
                 entity.Property(m => m.Fecha).HasDefaultValueSql("GETDATE()");
 
                 entity.HasOne(m => m.Pieza)
@@ -100,20 +104,25 @@ namespace AuthAPI.Data
                 .ToTable("ComponentesProducto"); // fuerza el nombre exacto
 
 
-            // Configuración para DetalleCompra
-            modelBuilder.Entity<DetalleCompra>()
-                .HasOne(d => d.MovimientosPieza)
-                .WithOne(m => m.DetalleCompra)
-                .HasForeignKey<DetalleCompra>(d => d.MovimientosPiezaId)
-                .OnDelete(DeleteBehavior.Restrict);
+            /// Configuración para DetalleCompra - ACTUALIZADA
+            modelBuilder.Entity<DetalleCompra>(entity =>
+            {
+                entity.Property(d => d.PrecioTotal).HasPrecision(18, 2);
 
-            // Producto
+                entity.HasOne(d => d.MovimientosPieza)
+                    .WithOne(m => m.DetalleCompra)
+                    .HasForeignKey<DetalleCompra>(d => d.MovimientosPiezaId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Producto - CONFIGURACIÓN ACTUALIZADA
             modelBuilder.Entity<Producto>(entity =>
             {
                 entity.Property(p => p.Nombre).IsRequired().HasMaxLength(100);
                 entity.Property(p => p.Descripcion).HasMaxLength(255);
                 entity.Property(p => p.Imagen).HasMaxLength(250);
                 entity.Property(p => p.FechaRegistro).HasDefaultValueSql("GETDATE()");
+                entity.Property(p => p.PrecioSugerido).HasPrecision(18, 2);
             });
 
             // Comentario - Nueva configuración
@@ -140,16 +149,20 @@ namespace AuthAPI.Data
                     .HasDatabaseName("IX_Comentarios_VentaId_ProductoId");
             });
 
-            // Venta
+            // Venta - CONFIGURACIÓN ACTUALIZADA
             modelBuilder.Entity<Venta>(entity =>
             {
                 entity.Property(v => v.Fecha).HasDefaultValueSql("GETDATE()");
                 entity.Property(v => v.Estado).HasDefaultValue("Completada").HasMaxLength(50);
+                entity.Property(v => v.Total).HasPrecision(18, 2);
             });
 
-            // DetalleVenta
+            // DetalleVenta - CONFIGURACIÓN ACTUALIZADA
             modelBuilder.Entity<DetalleVenta>(entity =>
             {
+                entity.Property(d => d.PrecioUnitario).HasPrecision(18, 2);
+                entity.Property(d => d.Subtotal).HasPrecision(18, 2);
+
                 entity.HasOne(d => d.Producto)
                     .WithMany(p => p.DetallesVenta)
                     .HasForeignKey(d => d.ProductoId);
