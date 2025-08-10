@@ -70,21 +70,34 @@ namespace AuthAPI.Controllers
             }));
         }
 
-        [HttpPost("comment")]
+        [HttpPost("comentario")]
         public async Task<IActionResult> PostComentario(ComentarioDto dto)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var hasPurchased = await _baseDatos.Ventas
-                .Where(v => v.UsuarioId == userId)
-                .SelectMany(v => v.Detalles)
-                .AnyAsync(dv => dv.ProductoId == dto.ProductoId);
+            // Verificar que la venta pertenece al usuario
+            var venta = await _baseDatos.Ventas
+                .Include(v => v.Detalles)
+                .FirstOrDefaultAsync(v => v.Id == dto.VentaId && v.UsuarioId == userId);
 
-            if (!hasPurchased)
-                return BadRequest("No puedes comentar un producto que no has comprado.");
+            if (venta == null)
+                return BadRequest("No se encontró la venta o no tienes permisos para comentar sobre ella.");
+
+            // Verificar que el producto está en esa venta
+            var detalleVenta = venta.Detalles.FirstOrDefault(d => d.ProductoId == dto.ProductoId);
+            if (detalleVenta == null)
+                return BadRequest("El producto no está incluido en esta venta.");
+
+            // Verificar que no hay comentario previo para este producto en esta venta
+            var comentarioExistente = await _baseDatos.Comentarios
+                .FirstOrDefaultAsync(c => c.VentaId == dto.VentaId && c.ProductoId == dto.ProductoId);
+
+            if (comentarioExistente != null)
+                return BadRequest("Ya existe un comentario para este producto en esta venta.");
 
             var comentario = new Comentario
             {
+                VentaId = dto.VentaId,
                 ProductoId = dto.ProductoId,
                 Descripcion = dto.Descripcion,
                 Calificacion = dto.Calificacion,

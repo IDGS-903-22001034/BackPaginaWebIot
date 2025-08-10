@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace AuthAPI.Models
@@ -7,6 +6,13 @@ namespace AuthAPI.Models
     public class Comentario
     {
         public int Id { get; set; }
+
+        // Cambiar de ProductoId a VentaId
+        public int VentaId { get; set; }
+        [JsonIgnore]
+        public Venta? Venta { get; set; }
+
+        // Agregar ProductoId para saber sobre qué producto específico es el comentario
         public int ProductoId { get; set; }
         [JsonIgnore]
         public Producto? Producto { get; set; }

@@ -15,6 +15,11 @@ namespace AuthAPI.Models
         public string Estado { get; set; } = "Completada";
 
         public ICollection<DetalleVenta> Detalles { get; set; }
+
+        // Agregar navegación a comentarios
+        [JsonIgnore]
+        public ICollection<Comentario>? Comentarios { get; set; }
+
         public string? UsuarioId { get; set; }
         [JsonIgnore]
         public AppUser? Usuario { get; set; }

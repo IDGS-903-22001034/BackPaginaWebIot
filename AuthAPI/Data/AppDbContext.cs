@@ -116,11 +116,28 @@ namespace AuthAPI.Data
                 entity.Property(p => p.FechaRegistro).HasDefaultValueSql("GETDATE()");
             });
 
-            // Comentario
+            // Comentario - Nueva configuración
             modelBuilder.Entity<Comentario>(entity =>
             {
                 entity.Property(c => c.Calificacion).HasAnnotation("Range", new[] { 1, 5 });
                 entity.Property(c => c.Fecha).HasDefaultValueSql("GETDATE()");
+
+                // Relación con Venta
+                entity.HasOne(c => c.Venta)
+                    .WithMany(v => v.Comentarios)
+                    .HasForeignKey(c => c.VentaId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Relación con Producto
+                entity.HasOne(c => c.Producto)
+                    .WithMany(p => p.Comentarios)
+                    .HasForeignKey(c => c.ProductoId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Índice único para evitar comentarios duplicados del mismo producto en la misma venta
+                entity.HasIndex(c => new { c.VentaId, c.ProductoId })
+                    .IsUnique()
+                    .HasDatabaseName("IX_Comentarios_VentaId_ProductoId");
             });
 
             // Venta
