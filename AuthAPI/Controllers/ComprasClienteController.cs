@@ -32,6 +32,7 @@ namespace AuthAPI.Controllers
 
             var result = purchases.Select(p => new CompraClienteDto
             {
+                VentaId = p.Id,
                 Fecha = p.Fecha,
                 Total = p.Total,
                 Productos = p.Detalles.Select(d => new ProductoDto
@@ -40,7 +41,8 @@ namespace AuthAPI.Controllers
                     Nombre = d.Producto.Nombre,
                     Cantidad = d.Cantidad,
                     PrecioUnitario = d.PrecioUnitario,
-                    Subtotal = d.Subtotal
+                    Subtotal = d.Subtotal,
+                    VentaId=p.Id
                 }).ToList()
             });
 
