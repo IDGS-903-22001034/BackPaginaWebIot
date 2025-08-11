@@ -9,7 +9,7 @@ namespace AuthAPI.Models
         public int Id { get; set; }
 
         public int PiezaId { get; set; }
-        [JsonIgnore]
+        
         public Pieza? Pieza { get; set; }
 
         public DateTime Fecha { get; set; } = DateTime.Now;

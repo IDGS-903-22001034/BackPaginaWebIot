@@ -8,17 +8,18 @@ namespace AuthAPI.Models
         public int Id { get; set; }
 
         [StringLength(100)]
-        public string Nombre { get; set; }
+        public string? Nombre { get; set; }
 
         [StringLength(255)]
-        public string Descripcion { get; set; }
+        public string? Descripcion { get; set; }
 
-        public decimal PrecioSugerido { get; set; }
+        public decimal? PrecioSugerido { get; set; }
 
         [StringLength(250)]
-        public string Imagen { get; set; }
+        public string? Imagen { get; set; }
 
-        public DateTime FechaRegistro { get; set; } = DateTime.Now;
+        public DateTime? FechaRegistro { get; set; } = DateTime.Now;
+
         [JsonIgnore]
         public ICollection<ComponentesProducto>? ComponentesProducto { get; set; }
         [JsonIgnore]

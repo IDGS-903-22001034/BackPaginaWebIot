@@ -14,7 +14,7 @@ namespace AuthAPI.Models
         public Compra? Compra { get; set; }
 
         public int? MovimientosPiezaId { get; set; }
-        [JsonIgnore]
+        
         public MovimientosPieza? MovimientosPieza { get; set; }
 
         [StringLength(50)]
