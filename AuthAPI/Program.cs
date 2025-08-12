@@ -128,6 +128,13 @@ builder.Services.AddSwaggerGen(c =>
             new string[] {}
         }
     });
+    // Ignora los métodos que usan IFormFile en la documentación
+    c.IgnoreObsoleteActions(); // Opcional: ignora métodos marcados como [Obsolete]
+    c.DocInclusionPredicate((docName, apiDesc) =>
+    {
+        // Excluye los endpoints que tienen parámetros IFormFile
+        return !apiDesc.ParameterDescriptions.Any(p => p.Type == typeof(IFormFile));
+    });
 });
 
 builder.Services.AddScoped<IEmailService, EmailService>();

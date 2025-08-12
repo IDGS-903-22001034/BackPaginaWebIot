@@ -41,6 +41,7 @@ namespace AuthAPI.Controllers
 
         [HttpPost]
         [Route("AgregarProductoConManual")]
+        [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<IActionResult> AgregarProductoConManual(
     [FromForm] string nombre,
     [FromForm] string descripcion,
@@ -92,6 +93,7 @@ namespace AuthAPI.Controllers
 
         [HttpPut]
         [Route("ModificarProductoConManual/{id:int}")]
+        [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<IActionResult> ModificarProductoConManual(
     int id,
     [FromForm] string nombre,

@@ -25,18 +25,7 @@ namespace AuthAPI.Controllers
                 .Include(c => c.Producto)
                 .ToListAsync();
         }
-        // GET: api/ObtenerManualPorProducto/5
-        [HttpGet]
-        [Route("ObtenerManualPorProducto/{productoId:int}")]
-        public async Task<ActionResult<IEnumerable<Manual>>> GetManualesPorProducto(int productoId)
-        {
-            var manuales = await _baseDatos.Manuales
-                .Where(c => c.ProductoId == productoId)
-                .Include(c => c.Producto)
-                .ToListAsync();
-
-            return manuales;
-        }
+        
 
         // POST: api/AgregarManual
         [HttpPost]
@@ -48,38 +37,7 @@ namespace AuthAPI.Controllers
             return Ok(manual);
         }
 
-        // POST: api/SubirManual
-        [HttpPost]
-        [Route("SubirManual")]
-        public async Task<IActionResult> SubirManual([FromForm] int productoId, [FromForm] string titulo, [FromForm] IFormFile archivo)
-        {
-            if (archivo == null || archivo.Length == 0)
-                return BadRequest("Archivo no válido");
-
-            var carpeta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "manuales");
-            if (!Directory.Exists(carpeta))
-                Directory.CreateDirectory(carpeta);
-
-            var fileName = Path.GetFileName(archivo.FileName);
-            var rutaCompleta = Path.Combine(carpeta, fileName);
-
-            using (var stream = new FileStream(rutaCompleta, FileMode.Create))
-            {
-                await archivo.CopyToAsync(stream);
-            }
-
-            var manual = new Manual
-            {
-                ProductoId = productoId,
-                Titulo = titulo,
-                UrlDocumento = $"/manuales/{fileName}"
-            };
-
-            _baseDatos.Manuales.Add(manual);
-            await _baseDatos.SaveChangesAsync();
-
-            return Ok(manual);
-        }
+        
 
         // PUT: api/ModificarManual/5
         [HttpPut]
