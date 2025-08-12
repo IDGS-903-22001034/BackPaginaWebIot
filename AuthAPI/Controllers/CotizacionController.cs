@@ -80,11 +80,7 @@ namespace AuthAPI.Controllers
                 await _context.SaveChangesAsync();
 
                 // Notificar a administradores
-                await _emailService.SendNotificationToAdmin(
-                    "Nueva Cotización Recibida",
-                    $"Se ha recibido una nueva cotización de {dto.NombreCliente} ({dto.EmailCliente}). " +
-                    $"Dispositivos: {dto.CantidadDispositivos}, Precio estimado: ${precioCalculado:N2}"
-                );
+                await _emailService.SendCotizacionNotificationToAdmin(dto, precioCalculado);
 
                 return Ok(new
                 {
